@@ -1,0 +1,86 @@
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from typing import List, Optional
+from app.models.role import Role
+from app.models.user import User
+from app.schemas.role import RoleCreate, RoleUpdate
+
+
+def get_role_by_id(db: Session, role_id: int) -> Optional[Role]:
+    """根据ID获取角色"""
+    return db.query(Role).filter(Role.id == role_id).first()
+
+
+def get_role_by_name(db: Session, name: str) -> Optional[Role]:
+    """根据名称获取角色"""
+    return db.query(Role).filter(Role.name == name).first()
+
+
+def get_roles(db: Session, skip: int = 0, limit: int = 100, include_inactive: bool = False) -> List[Role]:
+    """获取角色列表"""
+    query = db.query(Role)
+    if not include_inactive:
+        query = query.filter(Role.is_active == True)
+    return query.offset(skip).limit(limit).all()
+
+
+def create_role(db: Session, role: RoleCreate) -> Role:
+    """创建新角色"""
+    db_role = Role(
+        name=role.name,
+        description=role.description,
+        is_active=role.is_active
+    )
+    try:
+        db.add(db_role)
+        db.commit()
+        db.refresh(db_role)
+        return db_role
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("角色名已存在")
+
+
+def update_role(db: Session, role_id: int, role_update: RoleUpdate) -> Optional[Role]:
+    """更新角色"""
+    db_role = get_role_by_id(db, role_id)
+    if not db_role:
+        return None
+    
+    update_data = role_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_role, field, value)
+    
+    try:
+        db.commit()
+        db.refresh(db_role)
+        return db_role
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("角色名已存在")
+
+
+def delete_role(db: Session, role_id: int) -> bool:
+    """删除角色"""
+    db_role = get_role_by_id(db, role_id)
+    if not db_role:
+        return False
+    
+    # 检查是否有用户使用此角色
+    user_count = db.query(User).filter(User.role_id == role_id).count()
+    if user_count > 0:
+        raise ValueError(f"无法删除角色，仍有 {user_count} 个用户使用此角色")
+    
+    db.delete(db_role)
+    db.commit()
+    return True
+
+
+def get_role_users(db: Session, role_id: int) -> List[User]:
+    """获取角色下的所有用户"""
+    return db.query(User).filter(User.role_id == role_id).all()
+
+
+def count_users_by_role(db: Session, role_id: int) -> int:
+    """统计角色下的用户数量"""
+    return db.query(User).filter(User.role_id == role_id).count()
