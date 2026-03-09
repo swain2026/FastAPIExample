@@ -8,23 +8,23 @@ from app.core.security import get_password_hash, verify_password
 
 
 def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
-    """根据ID获取用户"""
+    """Get user by ID"""
     return db.query(User).filter(User.id == user_id).first()
 
 
 def get_user_by_username(db: Session, username: str) -> Optional[User]:
-    """根据用户名获取用户"""
+    """Get user by username"""
     return db.query(User).filter(User.username == username).first()
 
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
-    """根据邮箱获取用户"""
+    """Get user by email"""
     return db.query(User).filter(User.email == email).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100, include_inactive: bool = False, 
               role_id: Optional[int] = None) -> List[User]:
-    """获取用户列表"""
+    """Get user list"""
     query = db.query(User).join(Role, User.role_id == Role.id, isouter=True)
     
     if not include_inactive:
@@ -37,7 +37,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100, include_inactive: bo
 
 
 def create_user(db: Session, user: UserCreate) -> User:
-    """创建新用户"""
+    """Create new user"""
     hashed_password = get_password_hash(user.password)
     db_user = User(
         username=user.username,
@@ -53,18 +53,18 @@ def create_user(db: Session, user: UserCreate) -> User:
         return db_user
     except IntegrityError:
         db.rollback()
-        raise ValueError("用户名或邮箱已存在")
+        raise ValueError("Username or email already exists")
 
 
 def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[User]:
-    """更新用户"""
+    """Update user"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None
     
     update_data = user_update.model_dump(exclude_unset=True)
     
-    # 如果更新密码，需要加密
+    # If updating password, need to hash it
     if 'password' in update_data and update_data['password']:
         update_data['hashed_password'] = get_password_hash(update_data.pop('password'))
     
@@ -77,11 +77,11 @@ def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[
         return db_user
     except IntegrityError:
         db.rollback()
-        raise ValueError("用户名或邮箱已存在")
+        raise ValueError("Username or email already exists")
 
 
 def delete_user(db: Session, user_id: int) -> bool:
-    """删除用户"""
+    """Delete user"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return False
@@ -92,7 +92,7 @@ def delete_user(db: Session, user_id: int) -> bool:
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
-    """验证用户"""
+    """Authenticate user"""
     user = get_user_by_username(db, username)
     if not user:
         return None
@@ -102,7 +102,7 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
 
 
 def update_user_refresh_token(db: Session, user: User, refresh_token: str) -> User:
-    """更新用户的刷新令牌"""
+    """Update user's refresh token"""
     user.refresh_token = refresh_token
     db.commit()
     db.refresh(user)
@@ -110,26 +110,26 @@ def update_user_refresh_token(db: Session, user: User, refresh_token: str) -> Us
 
 
 def get_user_by_refresh_token(db: Session, refresh_token: str) -> Optional[User]:
-    """根据刷新令牌获取用户"""
+    """Get user by refresh token"""
     return db.query(User).filter(User.refresh_token == refresh_token).first()
 
 
 def clear_user_refresh_token(db: Session, user: User) -> None:
-    """清除用户的刷新令牌"""
+    """Clear user's refresh token"""
     user.refresh_token = None
     db.commit()
 
 
 def assign_role_to_user(db: Session, user_id: int, role_id: int) -> Optional[User]:
-    """为用户分配角色"""
+    """Assign role to user"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None
     
-    # 检查角色是否存在
+    # Check if role exists
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
-        raise ValueError("角色不存在")
+        raise ValueError("Role not found")
     
     db_user.role_id = role_id
     db.commit()
@@ -138,7 +138,7 @@ def assign_role_to_user(db: Session, user_id: int, role_id: int) -> Optional[Use
 
 
 def remove_role_from_user(db: Session, user_id: int) -> Optional[User]:
-    """移除用户的角色"""
+    """Remove role from user"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None

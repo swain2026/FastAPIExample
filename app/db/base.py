@@ -1,4 +1,4 @@
 from sqlalchemy.ext.declarative import declarative_base
 
-# 创建基础模型类
+# Create base model class
 Base = declarative_base()

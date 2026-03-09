@@ -1,9 +1,9 @@
-# 字节码文件
+# Byte-compiled files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# 分发 / 打包
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -28,7 +28,7 @@ MANIFEST
 *.manifest
 *.spec
 
-# 单元测试 / 覆盖率报告
+# Unit test / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -42,7 +42,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# 翻译
+# Translations
 *.mo
 *.pot
 
@@ -59,7 +59,7 @@ instance/
 # Scrapy
 .scrapy
 
-# Sphinx 文档
+# Sphinx documentation
 docs/_build/
 
 # PyBuilder
@@ -88,7 +88,7 @@ celerybeat.pid
 # SageMath
 *.sage.py
 
-# 环境变量
+# Environment variables
 .env
 .venv
 env/
@@ -115,7 +115,7 @@ dmypy.json
 # Pyre
 .pyre/
 
-# 数据库文件
+# Database files
 *.db
 *.sqlite3
 
@@ -126,6 +126,6 @@ dmypy.json
 *.swo
 *~
 
-# 操作系统
+# Operating system
 .DS_Store
 Thumbs.db

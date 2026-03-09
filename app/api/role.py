@@ -66,7 +66,7 @@ async def create_new_role(
     current_user: User = Depends(get_current_active_user)
 ):
     """Create new role"""
-    # 检查角色名是否已存在
+    # Check if role name already exists
     if get_role_by_name(db, role.name):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -97,7 +97,7 @@ async def update_existing_role(
             detail="Role not found"
         )
     
-    # 如果更新角色名，检查是否与其他角色冲突
+    # If updating role name, check for conflicts with other roles
     if role_update.name and role_update.name != role.name:
         existing_role = get_role_by_name(db, role_update.name)
         if existing_role:
@@ -130,7 +130,7 @@ async def delete_existing_role(
             detail="Role not found"
         )
     
-    # 检查是否有用户使用此角色
+    # Check if any users are using this role
     user_count = count_users_by_role(db, role_id)
     if user_count > 0:
         raise HTTPException(

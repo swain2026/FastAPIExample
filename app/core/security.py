@@ -5,22 +5,22 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from app.core.config import settings
 
-# 密码哈希上下文
+# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """验证密码"""
+    """Verify password"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    """获取密码哈希"""
+    """Get password hash"""
     return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """创建访问令牌"""
+    """Create access token"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -33,7 +33,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """创建刷新令牌"""
+    """Create refresh token"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -46,7 +46,7 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) 
 
 
 def verify_token(token: str) -> dict:
-    """验证访问令牌"""
+    """Verify access token"""
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
@@ -67,7 +67,7 @@ def verify_token(token: str) -> dict:
 
 
 def verify_refresh_token(token: str) -> dict:
-    """验证刷新令牌"""
+    """Verify refresh token"""
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")

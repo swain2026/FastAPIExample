@@ -1,149 +1,149 @@
-# FastAPI JWT 认证示例项目
+# FastAPI JWT Authentication Example Project
 
-一个使用 FastAPI 框架构建的高性能 Web API 示例项目，集成了 JWT 认证系统。
+A high-performance Web API example project built with FastAPI framework, integrated with JWT authentication system.
 
-## 🚀 特性
+## 🚀 Features
 
-- **高性能**：基于 Starlette 和 Pydantic，提供极高的性能
-- **JWT 认证**：完整的用户注册、登录和授权系统
-- **自动文档**：自动生成交互式 API 文档（Swagger UI 和 ReDoc）
-- **类型安全**：使用 Python 类型提示进行数据验证
-- **现代化**：支持 async/await 异步编程
-- **数据库集成**：使用 SQLAlchemy 进行数据持久化
-- **易于测试**：内置测试支持
-- **标准化**：遵循 OpenAPI 规范
+- **High Performance**: Built on Starlette and Pydantic for exceptional performance
+- **JWT Authentication**: Complete user registration, login, and authorization system
+- **Automatic Documentation**: Auto-generated interactive API documentation (Swagger UI and ReDoc)
+- **Type Safety**: Data validation using Python type hints
+- **Modern**: Support for async/await asynchronous programming
+- **Database Integration**: Data persistence using SQLAlchemy
+- **Easy Testing**: Built-in testing support
+- **Standardized**: Follows OpenAPI specifications
 
-## 📋 环境要求
+## 📋 Requirements
 
 - Python 3.8+
-- pip 或 poetry
+- pip or poetry
 
-## 🛠️ 安装
+## 🛠️ Installation
 
-### 使用 pip
+### Using pip
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone <repository-url>
 cd fastapi
 
-# 创建虚拟环境
+# Create virtual environment
 python -m venv venv
 
-# 激活虚拟环境
+# Activate virtual environment
 # Windows
 venv\Scripts\activate
 # macOS/Linux
 source venv/bin/activate
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 使用 poetry
+### Using poetry
 
 ```bash
-# 安装 poetry (如果尚未安装)
+# Install poetry (if not already installed)
 pip install poetry
 
-# 安装依赖
+# Install dependencies
 poetry install
 
-# 激活虚拟环境
+# Activate virtual environment
 poetry shell
 ```
 
-## 🏃‍♂️ 快速开始
+## 🏃‍♂️ Quick Start
 
-1. **启动开发服务器**
+1. **Start the development server**
 
 ```bash
-# 使用 uvicorn 启动
+# Start with uvicorn
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-# 或使用 poetry
+# Or using poetry
 poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-2. **访问 API 文档**
+2. **Access API Documentation**
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 - OpenAPI JSON: http://localhost:8000/openapi.json
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 fastapi/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py                     # FastAPI 应用入口
-│   ├── api/                        # API 路由
+│   ├── main.py                     # FastAPI application entry point
+│   ├── api/                        # API routes
 │   │   ├── __init__.py
-│   │   ├── deps.py                 # 依赖项（认证等）
-│   │   └── endpoints/              # 端点定义
+│   │   ├── deps.py                 # Dependencies (authentication, etc.)
+│   │   └── endpoints/              # Endpoint definitions
 │   │       ├── __init__.py
-│   │       ├── auth.py             # 认证相关端点
-│   │       └── items.py            # 项目相关端点
-│   ├── core/                       # 核心配置
+│   │       ├── auth.py             # Authentication endpoints
+│   │       └── items.py            # Item endpoints
+│   ├── core/                       # Core configuration
 │   │   ├── __init__.py
-│   │   ├── config.py               # 应用配置
-│   │   └── security.py             # JWT 安全相关
-│   ├── models/                     # 数据库模型
+│   │   ├── config.py               # Application configuration
+│   │   └── security.py             # JWT security
+│   ├── models/                     # Database models
 │   │   ├── __init__.py
-│   │   └── user.py                 # 用户模型
-│   ├── schemas/                    # Pydantic 模式
+│   │   └── user.py                 # User model
+│   ├── schemas/                    # Pydantic schemas
 │   │   ├── __init__.py
-│   │   └── user.py                 # 用户模式
-│   ├── crud/                       # 数据库操作
+│   │   └── user.py                 # User schema
+│   ├── crud/                       # Database operations
 │   │   ├── __init__.py
-│   │   └── user.py                 # 用户 CRUD 操作
-│   └── db/                         # 数据库相关
+│   │   └── user.py                 # User CRUD operations
+│   └── db/                         # Database related
 │       ├── __init__.py
-│       └── database.py             # 数据库连接
-├── tests/                          # 测试文件
+│       └── database.py             # Database connection
+├── tests/                          # Test files
 │   ├── __init__.py
-│   └── test_auth.py                # 认证测试
-├── requirements.txt                 # 依赖列表
-├── .env.example                    # 环境变量示例
+│   └── test_auth.py                # Authentication tests
+├── requirements.txt                 # Dependencies list
+├── .env.example                    # Environment variables example
 ├── .gitignore
 └── README.md
 ```
 
-## 🔧 配置
+## 🔧 Configuration
 
-### 环境变量
+### Environment Variables
 
-1. **复制环境变量示例文件**
+1. **Copy the environment variables example file**
 
 ```bash
 cp .env.example .env
 ```
 
-2. **编辑 `.env` 文件并配置以下变量**
+2. **Edit the `.env` file and configure the following variables**
 
 ```env
-# 应用配置
+# Application configuration
 APP_NAME="FastAPI Demo"
 APP_VERSION="1.0.0"
 DEBUG=true
 
-# JWT 配置
+# JWT configuration
 SECRET_KEY="your-super-secret-key-change-this-in-production"
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# 数据库配置
+# Database configuration
 DATABASE_URL="sqlite:///./app.db"
 ```
 
-**⚠️ 重要**：在生产环境中，请务必修改 `SECRET_KEY` 为一个强随机字符串！
+**⚠️ Important**: In production, make sure to change `SECRET_KEY` to a strong random string!
 
-## 🔐 认证系统
+## 🔐 Authentication System
 
-### JWT 认证流程
+### JWT Authentication Flow
 
-1. **用户注册**
+1. **User Registration**
    ```bash
    POST /auth/register
    {
@@ -153,7 +153,7 @@ DATABASE_URL="sqlite:///./app.db"
    }
    ```
 
-2. **用户登录**
+2. **User Login**
    ```bash
    POST /auth/login
    Content-Type: application/x-www-form-urlencoded
@@ -161,31 +161,31 @@ DATABASE_URL="sqlite:///./app.db"
    username=your_username&password=your_password
    ```
 
-3. **访问受保护路由**
+3. **Access Protected Routes**
    ```bash
    GET /items/
    Authorization: Bearer <your_jwt_token>
    ```
 
-### 认证端点
+### Authentication Endpoints
 
-| 方法 | 端点 | 描述 | 认证 |
-|------|------|------|------|
-| POST | `/auth/register` | 用户注册 | 无 |
-| POST | `/auth/login` | 用户登录 | 无 |
-| GET | `/auth/me` | 获取当前用户信息 | JWT |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/auth/register` | User registration | None |
+| POST | `/auth/login` | User login | None |
+| GET | `/auth/me` | Get current user info | JWT |
 
-### 受保护路由
+### Protected Routes
 
-| 方法 | 端点 | 描述 | 认证 |
-|------|------|------|------|
-| GET | `/items/` | 获取项目列表 | JWT |
-| GET | `/items/{item_id}` | 获取单个项目 | JWT |
-| POST | `/items/` | 创建项目 | JWT |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/items/` | Get items list | JWT |
+| GET | `/items/{item_id}` | Get single item | JWT |
+| POST | `/items/` | Create item | JWT |
 
-### 代码示例
+### Code Examples
 
-#### JWT 依赖使用
+#### Using JWT Dependencies
 
 ```python
 from app.api.deps import get_current_active_user
@@ -196,76 +196,76 @@ async def protected_route(current_user: User = Depends(get_current_active_user))
     return {"message": f"Hello {current_user.username}!"}
 ```
 
-#### 密码哈希
+#### Password Hashing
 
 ```python
 from app.core.security import get_password_hash, verify_password
 
-# 哈希密码
+# Hash password
 hashed_password = get_password_hash("plain_password")
 
-# 验证密码
+# Verify password
 is_valid = verify_password("plain_password", hashed_password)
 ```
 
-## 🧪 测试
+## 🧪 Testing
 
-### 运行测试
+### Running Tests
 
 ```bash
-# 使用 pytest
+# Using pytest
 pytest
 
-# 运行测试并生成覆盖率报告
+# Run tests with coverage report
 pytest --cov=app tests/
 
-# 或使用 poetry
+# Or using poetry
 poetry run pytest
 
-# 运行特定测试文件
+# Run specific test file
 pytest tests/test_auth.py -v
 ```
 
-### 测试覆盖的功能
+### Test Coverage
 
-- ✅ 用户注册
-- ✅ 用户登录和 JWT 令牌生成
-- ✅ 受保护路由的访问控制
-- ✅ 无效令牌的处理
-- ✅ 用户信息的获取
+- ✅ User registration
+- ✅ User login and JWT token generation
+- ✅ Protected route access control
+- ✅ Invalid token handling
+- ✅ User information retrieval
 
-### 手动测试步骤
+### Manual Testing Steps
 
-1. **启动服务**
+1. **Start the service**
    ```bash
    uvicorn app.main:app --reload
    ```
 
-2. **注册新用户**
+2. **Register a new user**
    ```bash
    curl -X POST "http://localhost:8000/auth/register" \
    -H "Content-Type: application/json" \
    -d '{"username": "testuser", "email": "test@example.com", "password": "password123"}'
    ```
 
-3. **登录获取令牌**
+3. **Login to get token**
    ```bash
    curl -X POST "http://localhost:8000/auth/login" \
    -H "Content-Type: application/x-www-form-urlencoded" \
    -d "username=testuser&password=password123"
    ```
 
-4. **使用令牌访问受保护路由**
+4. **Access protected route with token**
    ```bash
    curl -X GET "http://localhost:8000/items/" \
    -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
    ```
 
-## 🚀 部署
+## 🚀 Deployment
 
-### Docker 部署
+### Docker Deployment
 
-1. **创建 Dockerfile**
+1. **Create Dockerfile**
 
 ```dockerfile
 FROM python:3.9
@@ -281,19 +281,19 @@ COPY ./app /code/app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
 ```
 
-2. **构建和运行**
+2. **Build and Run**
 
 ```bash
-# 构建镜像
+# Build image
 docker build -t fastapi-app .
 
-# 运行容器
+# Run container
 docker run -d --name my-fastapi-app -p 80:80 fastapi-app
 ```
 
-### 云服务部署
+### Cloud Service Deployment
 
-支持部署到以下平台：
+Supports deployment to the following platforms:
 - AWS (Elastic Beanstalk, Lambda)
 - Google Cloud (Cloud Run, App Engine)
 - Azure (App Service)
@@ -301,9 +301,9 @@ docker run -d --name my-fastapi-app -p 80:80 fastapi-app
 - Vercel
 - Railway
 
-## 🔍 监控和日志
+## 🔍 Monitoring and Logging
 
-### 日志配置
+### Logging Configuration
 
 ```python
 import logging
@@ -318,39 +318,39 @@ async def root():
     return {"message": "Hello World"}
 ```
 
-### 性能监控
+### Performance Monitoring
 
-可以集成以下工具进行监控：
+Can integrate the following tools for monitoring:
 - Prometheus + Grafana
 - New Relic
 - DataDog
-- Sentry (错误追踪)
+- Sentry (error tracking)
 
-## 🤝 贡献指南
+## 🤝 Contributing
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 相关链接
+## 🔗 Related Links
 
-- [FastAPI 官方文档](https://fastapi.tiangolo.com/)
+- [FastAPI Official Documentation](https://fastapi.tiangolo.com/)
 - [FastAPI GitHub](https://github.com/tiangolo/fastapi)
-- [Starlette 文档](https://www.starlette.io/)
-- [Pydantic 文档](https://pydantic-docs.helpmanual.io/)
+- [Starlette Documentation](https://www.starlette.io/)
+- [Pydantic Documentation](https://pydantic-docs.helpmanual.io/)
 
-## 📞 支持
+## 📞 Support
 
-如果您有任何问题或建议，请：
-- 创建 [Issue](https://github.com/your-username/fastapi/issues)
-- 发送邮件至 your-email@example.com
+If you have any questions or suggestions, please:
+- Create an [Issue](https://github.com/your-username/fastapi/issues)
+- Send an email to your-email@example.com
 
 ---
 
-**⭐ 如果这个项目对您有帮助，请给它一个星标！**
+**⭐ If this project helps you, please give it a star!**

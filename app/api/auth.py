@@ -20,14 +20,14 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     if get_user_by_username(db, user.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="用户名已存在"
+            detail="Username already exists"
         )
     
     # Check if email already exists
     if get_user_by_email(db, user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="邮箱已存在"
+            detail="Email already exists"
         )
     
     try:

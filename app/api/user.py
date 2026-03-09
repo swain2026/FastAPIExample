@@ -53,21 +53,21 @@ async def create_new_user(
     current_user: User = Depends(get_current_active_user)
 ):
     """Create new user"""
-    # 检查用户名是否已存在
+    # Check if username already exists
     if get_user_by_username(db, user.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already exists"
         )
     
-    # 检查邮箱是否已存在
+    # Check if email already exists
     if get_user_by_email(db, user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already exists"
         )
     
-    # 如果指定了角色，检查角色是否存在
+    # If role is specified, check if role exists
     if user.role_id:
         role = get_role_by_id(db, user.role_id)
         if not role:
@@ -100,7 +100,7 @@ async def update_existing_user(
             detail="User not found"
         )
     
-    # 如果更新用户名，检查是否与其他用户冲突
+    # If updating username, check for conflicts with other users
     if user_update.username and user_update.username != user.username:
         existing_user = get_user_by_username(db, user_update.username)
         if existing_user:
@@ -109,7 +109,7 @@ async def update_existing_user(
                 detail="Username already exists"
             )
     
-    # 如果更新邮箱，检查是否与其他用户冲突
+    # If updating email, check for conflicts with other users
     if user_update.email and user_update.email != user.email:
         existing_user = get_user_by_email(db, user_update.email)
         if existing_user:
@@ -118,9 +118,9 @@ async def update_existing_user(
                 detail="Email already exists"
             )
     
-    # 如果更新角色，检查角色是否存在
+    # If updating role, check if role exists
     if user_update.role_id is not None:
-        if user_update.role_id == 0:  # 允许设置为空角色
+        if user_update.role_id == 0:  # Allow setting to empty role
             user_update.role_id = None
         elif user_update.role_id != user.role_id:
             role = get_role_by_id(db, user_update.role_id)
@@ -154,7 +154,7 @@ async def delete_existing_user(
             detail="User not found"
         )
     
-    # 防止删除自己
+    # Prevent deleting yourself
     if user_id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -184,7 +184,7 @@ async def assign_role_to_user_endpoint(
     if not role:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="角色不存在"
+            detail="Role not found"
         )
     
     try:
@@ -229,7 +229,7 @@ async def toggle_user_status(
             detail="User not found"
         )
     
-    # 防止禁用自己
+    # Prevent disabling yourself
     if user_id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
