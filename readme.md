@@ -59,7 +59,7 @@ poetry shell
 
 ```bash
 # Start with uvicorn
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Or using poetry
 poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000

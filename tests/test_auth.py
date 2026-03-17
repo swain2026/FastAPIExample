@@ -96,8 +96,8 @@ def test_refresh_token():
         "password": "testpassword123"
     }
     login_response = client.post("/auth/login", data=login_data)
-    login_data = login_response.json()
-    refresh_token = login_data["refresh_token"]
+    response_data = login_response.json()
+    refresh_token = response_data["refresh_token"]
     
     # Use refresh token to get new access token
     refresh_data = {"refresh_token": refresh_token}
@@ -124,8 +124,8 @@ def test_logout():
         "password": "testpassword123"
     }
     login_response = client.post("/auth/login", data=login_data)
-    login_data = login_response.json()
-    refresh_token = login_data["refresh_token"]
+    response_data = login_response.json()
+    refresh_token = response_data["refresh_token"]
     
     # Logout
     logout_data = {"refresh_token": refresh_token}
