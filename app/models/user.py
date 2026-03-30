@@ -1,7 +1,15 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 from datetime import datetime
+
+# Many-to-many association table
+user_roles = Table(
+    "user_roles",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("role_id", Integer, ForeignKey("roles.id"), primary_key=True),
+)
 
 
 class User(Base):
@@ -14,9 +22,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     refresh_token = Column(String, nullable=True)
     
-    # 外键关联角色
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
-    role = relationship("Role", back_populates="users")
+    # Many-to-many roles
+    roles = relationship("Role", secondary=user_roles, back_populates="users")
     
     # 时间戳
     created_at = Column(DateTime, default=datetime.utcnow)

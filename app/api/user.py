@@ -3,31 +3,46 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_active_user
 from app.crud.user import (
-    get_user_by_id, get_user_by_username, get_user_by_email, get_users, 
-    create_user, update_user, delete_user, assign_role_to_user, remove_role_from_user
+    get_user_by_id, get_user_by_username, get_user_by_email, get_users, count_users,
+    create_user, update_user, delete_user, assign_roles_to_user, remove_roles_from_user
 )
 from app.crud.role import get_role_by_id
-from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserWithRole
+from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserWithRole, PaginatedResponse
 from app.models.user import User
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[UserWithRole])
+@router.get("/", response_model=PaginatedResponse[UserWithRole])
 async def get_users_list(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    include_inactive: bool = Query(False),
+    status: Optional[bool] = Query(None),
     role_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get user list"""
-    users = get_users(
-        db, skip=skip, limit=limit, 
-        include_inactive=include_inactive, role_id=role_id
-    )
-    return users
+    """Get user list. status=null returns all, status=true/false filters by is_active."""
+    total = count_users(db, status=status, role_id=role_id)
+    users = get_users(db, skip=skip, limit=limit, status=status, role_id=role_id)
+    return PaginatedResponse(total=total, skip=skip, limit=limit, items=users)
+
+
+@router.get("/stats/overview")
+async def get_users_overview(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get user statistics overview"""
+    total_users = count_users(db)
+    active_users = count_users(db, status=True)
+    inactive_users = count_users(db, status=False)
+    
+    return {
+        "total_users": total_users,
+        "active_users": active_users,
+        "inactive_users": inactive_users
+    }
 
 
 @router.get("/{user_id}", response_model=UserWithRole)
@@ -68,13 +83,14 @@ async def create_new_user(
         )
     
     # If role is specified, check if role exists
-    if user.role_id:
-        role = get_role_by_id(db, user.role_id)
-        if not role:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Specified role not found"
-            )
+    if user.role_ids:
+        for rid in user.role_ids:
+            role = get_role_by_id(db, rid)
+            if not role:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Role {rid} not found"
+                )
     
     try:
         return create_user(db, user)
@@ -118,16 +134,14 @@ async def update_existing_user(
                 detail="Email already exists"
             )
     
-    # If updating role, check if role exists
-    if user_update.role_id is not None:
-        if user_update.role_id == 0:  # Allow setting to empty role
-            user_update.role_id = None
-        elif user_update.role_id != user.role_id:
-            role = get_role_by_id(db, user_update.role_id)
+    # If updating role, check if roles exist
+    if user_update.role_ids is not None:
+        for rid in user_update.role_ids:
+            role = get_role_by_id(db, rid)
             if not role:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Specified role not found"
+                    detail=f"Role {rid} not found"
                 )
     
     try:
@@ -172,29 +186,24 @@ async def assign_role_to_user_endpoint(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Assign role to user"""
+    """Add a role to user"""
     user = get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     role = get_role_by_id(db, role_id)
     if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+    
+    current_ids = [r.id for r in user.roles]
+    if role_id not in current_ids:
+        current_ids.append(role_id)
     
     try:
-        updated_user = assign_role_to_user(db, user_id, role_id)
+        updated_user = assign_roles_to_user(db, user_id, current_ids)
         return updated_user
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/{user_id}/remove-role", response_model=UserResponse)
@@ -203,15 +212,12 @@ async def remove_user_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Remove user role"""
+    """Remove all roles from user"""
     user = get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    updated_user = remove_role_from_user(db, user_id)
+    updated_user = remove_roles_from_user(db, user_id)
     return updated_user
 
 
@@ -239,22 +245,3 @@ async def toggle_user_status(
     user_update = UserUpdate(is_active=not user.is_active)
     updated_user = update_user(db, user_id, user_update)
     return updated_user
-
-
-@router.get("/stats/overview")
-async def get_users_overview(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
-    """Get user statistics overview"""
-    from app.crud.user import get_users
-    
-    total_users = len(get_users(db, include_inactive=True))
-    active_users = len(get_users(db, include_inactive=False))
-    inactive_users = total_users - active_users
-    
-    return {
-        "total_users": total_users,
-        "active_users": active_users,
-        "inactive_users": inactive_users
-    }

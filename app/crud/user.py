@@ -22,18 +22,35 @@ def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email).first()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100, include_inactive: bool = False, 
+def count_users(db: Session, status: Optional[bool] = None, role_id: Optional[int] = None) -> int:
+    """Count users with optional filters"""
+    query = db.query(User)
+    if status is not None:
+        query = query.filter(User.is_active == status)
+    if role_id is not None:
+        query = query.filter(User.roles.any(Role.id == role_id))
+    return query.count()
+
+
+def get_users(db: Session, skip: int = 0, limit: int = 100, status: Optional[bool] = None,
               role_id: Optional[int] = None) -> List[User]:
     """Get user list"""
-    query = db.query(User).join(Role, User.role_id == Role.id, isouter=True)
-    
-    if not include_inactive:
-        query = query.filter(User.is_active == True)
-    
+    query = db.query(User)
+    if status is not None:
+        query = query.filter(User.is_active == status)
     if role_id is not None:
-        query = query.filter(User.role_id == role_id)
-    
+        query = query.filter(User.roles.any(Role.id == role_id))
     return query.offset(skip).limit(limit).all()
+
+
+def _resolve_roles(db: Session, role_ids: List[int]) -> List[Role]:
+    """Fetch Role objects for given IDs, raise if any not found"""
+    roles = db.query(Role).filter(Role.id.in_(role_ids)).all()
+    if len(roles) != len(role_ids):
+        found = {r.id for r in roles}
+        missing = set(role_ids) - found
+        raise ValueError(f"Roles not found: {missing}")
+    return roles
 
 
 def create_user(db: Session, user: UserCreate) -> User:
@@ -44,8 +61,9 @@ def create_user(db: Session, user: UserCreate) -> User:
         email=user.email,
         hashed_password=hashed_password,
         is_active=user.is_active,
-        role_id=user.role_id
     )
+    if user.role_ids:
+        db_user.roles = _resolve_roles(db, user.role_ids)
     try:
         db.add(db_user)
         db.commit()
@@ -61,16 +79,21 @@ def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None
-    
+
     update_data = user_update.model_dump(exclude_unset=True)
-    
-    # If updating password, need to hash it
+
+    # Handle password hashing
     if 'password' in update_data and update_data['password']:
         update_data['hashed_password'] = get_password_hash(update_data.pop('password'))
-    
+
+    # Handle roles separately
+    if 'role_ids' in update_data:
+        role_ids = update_data.pop('role_ids')
+        db_user.roles = _resolve_roles(db, role_ids) if role_ids else []
+
     for field, value in update_data.items():
         setattr(db_user, field, value)
-    
+
     try:
         db.commit()
         db.refresh(db_user)
@@ -85,7 +108,6 @@ def delete_user(db: Session, user_id: int) -> bool:
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return False
-    
     db.delete(db_user)
     db.commit()
     return True
@@ -120,30 +142,23 @@ def clear_user_refresh_token(db: Session, user: User) -> None:
     db.commit()
 
 
-def assign_role_to_user(db: Session, user_id: int, role_id: int) -> Optional[User]:
-    """Assign role to user"""
+def assign_roles_to_user(db: Session, user_id: int, role_ids: List[int]) -> Optional[User]:
+    """Assign roles to user (replaces existing roles)"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None
-    
-    # Check if role exists
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise ValueError("Role not found")
-    
-    db_user.role_id = role_id
+    db_user.roles = _resolve_roles(db, role_ids)
     db.commit()
     db.refresh(db_user)
     return db_user
 
 
-def remove_role_from_user(db: Session, user_id: int) -> Optional[User]:
-    """Remove role from user"""
+def remove_roles_from_user(db: Session, user_id: int) -> Optional[User]:
+    """Remove all roles from user"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         return None
-    
-    db_user.role_id = None
+    db_user.roles = []
     db.commit()
     db.refresh(db_user)
     return db_user

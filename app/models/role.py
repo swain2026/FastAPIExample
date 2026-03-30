@@ -15,4 +15,6 @@ class Role(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # 关联用户
-    users = relationship("User", back_populates="role")
+    users = relationship("User", secondary="user_roles", back_populates="roles")
+    # 关联权限
+    permissions = relationship("Permission", secondary="role_permissions", back_populates="roles")

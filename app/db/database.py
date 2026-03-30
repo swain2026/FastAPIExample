@@ -14,6 +14,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Import all models to ensure tables are created
 from app.models.user import User
 from app.models.role import Role
+from app.models.permission import Permission
 
 
 def get_db():

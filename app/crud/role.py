@@ -66,10 +66,8 @@ def delete_role(db: Session, role_id: int) -> bool:
     if not db_role:
         return False
     
-    # Check if any users are using this role
-    user_count = db.query(User).filter(User.role_id == role_id).count()
-    if user_count > 0:
-        raise ValueError(f"Cannot delete role, {user_count} users are still using this role")
+    if db_role.users:
+        raise ValueError(f"Cannot delete role, {len(db_role.users)} users are still using this role")
     
     db.delete(db_role)
     db.commit()
@@ -78,9 +76,11 @@ def delete_role(db: Session, role_id: int) -> bool:
 
 def get_role_users(db: Session, role_id: int) -> List[User]:
     """Get all users under role"""
-    return db.query(User).filter(User.role_id == role_id).all()
+    role = get_role_by_id(db, role_id)
+    return role.users if role else []
 
 
 def count_users_by_role(db: Session, role_id: int) -> int:
     """Count users by role"""
-    return db.query(User).filter(User.role_id == role_id).count()
+    role = get_role_by_id(db, role_id)
+    return len(role.users) if role else 0

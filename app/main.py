@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api import auth
-from app.api import user, role
+from app.api import user, role, permission
 from app.db.database import create_tables
 from app.core.config import settings
 
@@ -45,6 +45,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(user.router, prefix="/users", tags=["usermgt"])
 app.include_router(role.router, prefix="/roles", tags=["rolemgt"])
+app.include_router(permission.router, prefix="/permissions", tags=["permissionmgt"])
 
 
 @app.get("/")
