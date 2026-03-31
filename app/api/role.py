@@ -6,13 +6,13 @@ from app.crud.role import (
     get_role_by_id, get_role_by_name, get_roles, create_role, 
     update_role, delete_role, get_role_users, count_users_by_role
 )
-from app.schemas.role import RoleCreate, RoleUpdate, RoleResponse, RoleWithUsers
+from app.schemas.role import RoleCreate, RoleUpdate, RoleResponse, RoleWithUsers, RoleWithDetails
 from app.models.user import User
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[RoleResponse])
+@router.get("/", response_model=List[RoleWithDetails])
 async def get_roles_list(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -20,7 +20,7 @@ async def get_roles_list(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get role list"""
+    """Get role list with users and permissions"""
     roles = get_roles(db, skip=skip, limit=limit, include_inactive=include_inactive)
     return roles
 

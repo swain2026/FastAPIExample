@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, Generic, TypeVar, List
 from datetime import datetime
 from app.schemas.role import RoleResponse
+from app.schemas.permission import PermissionResponse
 
 T = TypeVar("T")
 
@@ -69,6 +70,7 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+    permissions: List[PermissionResponse] = []
 
 
 class TokenRefresh(BaseModel):

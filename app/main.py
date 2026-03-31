@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api import auth
 from app.api import user, role, permission
+from app.api.log import router as log_router
+from app.middleware.api_log import ApiLogMiddleware
+from app.middleware.api_auth import ApiAuthMiddleware
 from app.db.database import create_tables
 from app.core.config import settings
 
@@ -32,6 +35,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Register API log middleware (logs all non-GET requests)
+app.add_middleware(ApiLogMiddleware)
+
+# Register auth middleware (requires JWT for all routes except /auth/*)
+app.add_middleware(ApiAuthMiddleware)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -42,10 +51,11 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(user.router, prefix="/users", tags=["usermgt"])
-app.include_router(role.router, prefix="/roles", tags=["rolemgt"])
-app.include_router(permission.router, prefix="/permissions", tags=["permissionmgt"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(user.router, prefix="/api/users", tags=["usermgt"])
+app.include_router(role.router, prefix="/api/roles", tags=["rolemgt"])
+app.include_router(permission.router, prefix="/api/permissions", tags=["permissionmgt"])
+app.include_router(log_router, prefix="/api/logs", tags=["logs"])
 
 
 @app.get("/")

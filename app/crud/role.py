@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from app.models.role import Role
 from app.models.user import User
+from app.models.permission import Permission
 from app.schemas.role import RoleCreate, RoleUpdate
 
 
@@ -31,6 +32,11 @@ def create_role(db: Session, role: RoleCreate) -> Role:
         description=role.description,
         is_active=role.is_active
     )
+    if role.permissions:
+        perms = db.query(Permission).filter(Permission.id.in_(role.permissions)).all()
+        if len(perms) != len(role.permissions):
+            raise ValueError("One or more permission IDs are invalid")
+        db_role.permissions = perms
     try:
         db.add(db_role)
         db.commit()
@@ -48,9 +54,17 @@ def update_role(db: Session, role_id: int, role_update: RoleUpdate) -> Optional[
         return None
     
     update_data = role_update.model_dump(exclude_unset=True)
+    permission_ids = update_data.pop("permissions", None)
+
     for field, value in update_data.items():
         setattr(db_role, field, value)
-    
+
+    if permission_ids is not None:
+        perms = db.query(Permission).filter(Permission.id.in_(permission_ids)).all()
+        if len(perms) != len(permission_ids):
+            raise ValueError("One or more permission IDs are invalid")
+        db_role.permissions = perms
+
     try:
         db.commit()
         db.refresh(db_role)

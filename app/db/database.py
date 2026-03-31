@@ -15,6 +15,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 from app.models.user import User
 from app.models.role import Role
 from app.models.permission import Permission
+from app.models.log import ApiLog
 
 
 def get_db():

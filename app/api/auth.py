@@ -10,7 +10,7 @@ from app.crud.user import update_user_refresh_token, get_user_by_refresh_token, 
 from app.core.config import settings
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -67,11 +67,21 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     
     # Save refresh token to database
     update_user_refresh_token(db, user, refresh_token)
-    
+
+    # Collect unique permissions across all roles
+    seen_ids = set()
+    permissions = []
+    for role in user.roles:
+        for perm in role.permissions:
+            if perm.id not in seen_ids:
+                seen_ids.add(perm.id)
+                permissions.append(perm)
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "permissions": permissions,
     }
 
 
@@ -102,11 +112,21 @@ async def refresh_token(token_data: TokenRefresh, db: Session = Depends(get_db))
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    
+
+    # Collect unique permissions across all roles
+    seen_ids = set()
+    permissions = []
+    for role in user.roles:
+        for perm in role.permissions:
+            if perm.id not in seen_ids:
+                seen_ids.add(perm.id)
+                permissions.append(perm)
+
     return {
         "access_token": access_token,
         "refresh_token": token_data.refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "permissions": permissions,
     }
 
 
