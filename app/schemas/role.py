@@ -47,6 +47,7 @@ class RolePermissionSummary(BaseModel):
     type: str
     path: Optional[str] = None
     method: Optional[str] = None
+    parent_id: Optional[int] = None
 
     class Config:
         from_attributes = True

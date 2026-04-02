@@ -30,7 +30,7 @@ def init_permissions(db: Session):
     # ── Menu: Auth (parent) ───────────────────────────────────────────────────
     menu_auth = get_or_create({
         "name": "menu.auth", "display_name": "Auth",
-        "type": PermissionType.menu, "path": "/auth",
+        "type": PermissionType.menu, "path": "",
         "method": None, "parent_id": 0, "sort_order": 2,
     })
 
@@ -85,7 +85,7 @@ def init_permissions(db: Session):
     # ── Menu: Logs ────────────────────────────────────────────────────────────
     menu_logs = get_or_create({
         "name": "menu.logs", "display_name": "Logs",
-        "type": PermissionType.menu, "path": "/logs",
+        "type": PermissionType.menu, "path": "/auth/logs",
         "method": None, "parent_id": menu_auth.id, "sort_order": 3,
     })
 
@@ -103,8 +103,7 @@ def init_roles(db: Session):
     """Initialize default roles"""
     default_roles = [
         {"name": "admin", "description": "Administrator with all permissions"},
-        {"name": "user", "description": "Regular user with basic permissions"},
-        {"name": "guest", "description": "Guest with view-only permissions"},
+        {"name": "user", "description": "Regular user with basic permissions"}
     ]
 
     for role_data in default_roles:
