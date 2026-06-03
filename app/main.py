@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.api import auth
 from app.api import user, role, permission
 from app.api.log import router as log_router
+from app.api.order import router as order_router
 from app.middleware.api_log import ApiLogMiddleware
 from app.middleware.api_auth import ApiAuthMiddleware
 from app.db.database import create_tables
@@ -56,6 +57,7 @@ app.include_router(user.router, prefix="/api/users", tags=["usermgt"])
 app.include_router(role.router, prefix="/api/roles", tags=["rolemgt"])
 app.include_router(permission.router, prefix="/api/permissions", tags=["permissionmgt"])
 app.include_router(log_router, prefix="/api/logs", tags=["logs"])
+app.include_router(order_router, prefix="/api/orders", tags=["ordermgt"])
 
 
 @app.get("/")
